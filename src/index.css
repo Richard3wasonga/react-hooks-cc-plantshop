@@ -1,6 +1,7 @@
 :root {
   --green: rgb(39, 189, 39);
   --red: rgb(241, 25, 25);
+  --blue: rgb(19, 223, 250);
 }
 
 * {
@@ -28,8 +29,12 @@ button.primary {
   background-color: var(--green);
   color: white;
 }
-button.deletebtn{
+button.deletebtn {
   background-color: var(--red);
+  color: white;
+}
+button.editbtn {
+  background-color: var(--blue);
   color: white;
 }
 

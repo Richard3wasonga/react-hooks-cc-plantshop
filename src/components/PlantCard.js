@@ -18,6 +18,33 @@ function PlantCard() {
     .catch(error => console.error(error))
 
   }
+  const handleEdit = (id) => {
+    const currentPlant = plantInfo.find(plant => plant.id === id);
+    const newPrice = window.prompt("Edit plant Price:", currentPlant.price);
+
+    if (newPrice && newPrice !== currentPlant.price) {
+      const updatedPlant = plantInfo.map(plant =>
+        plant.id === id ? { ...plant, price: newPrice} : plant
+      );
+      setplantInfo(updatedPlant);
+
+      fetch(`http://localhost:6001/plants/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+          name: currentPlant.name,
+          image: currentPlant.image,
+          price: newPrice,
+        }),
+      })
+        .then(res => res.json())
+        .then(data => console.log("Updated:", data))
+        .catch(err => console.error("Update failed:", err));
+    }
+  };
   
   return (
     <ul>
@@ -27,6 +54,7 @@ function PlantCard() {
       <h4>{plant.name}</h4>
       <p>Price: {plant.price}</p>
       <button className="deletebtn" onClick={() => handleDelete(plant.id)}>Delete</button>
+      <button className="editbtn" onClick={() => handleEdit(plant.id)}>Edit</button>
       {true ? (
         <button className="primary">In Stock</button>
       ) : (
