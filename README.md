@@ -1,150 +1,198 @@
-# Phase 2 Code Challenge: Plantsy
+# **Plantsy app**
 
-## Demo
+This is an app where users are able to buy plants.New plants can be added to the catalog,plants can also be removed and thier price edited to a new price.
 
-Use this gif as an example of how the app should work.
+---
+## **Installation**
 
-![Demo GIF](https://curriculum-content.s3.amazonaws.com/phase-2/react-hooks-mock-code-challenge-plantshop/plantsy_demo.gif)
+Access the live application here: [Live Link](https://react-hooks-cc-plantshop-inky-five.vercel.app/)
 
-## Instructions
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/Richard3wasonga/react-hooks-cc-plantshop
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd react-hooks-cc-plantshop
+   ```
+3. Ensure the server is running by writing `npm run server` on terminal.
+4. Run the react app with  writing `npm start` on your terminal.
 
-Welcome to Plantsy! You've been tasked with building out some features for the
-admin side of a plant store. The designers have put together the components and
-CSS. Now it's up to you to bring the features to life by adding stateful logic
-as well as persisting data to the backend via our API.
+---
 
-Your job will be to make our app work according to the user stories you will
-find the [Core Deliverables](#Core-Deliverables) section.
 
-## Setup
+## **How the app works**
 
-1. Run `npm install` in your terminal.
-2. Run `npm run server`. This will run your backend on port `6001`.
-3. In a new terminal, run `npm start`.
+### **NewPlantForm.js**
+This part has a form where plants can be added to the server.This part mainly uses `useState` and `event listeners`
 
-Make sure to open [http://localhost:6001/plants](http://localhost:6001/plants)
-in the browser to verify that your backend is working before you proceed!
+```js
+import React,{useState} from "react";
 
-## Endpoints
+function NewPlantForm() {
+  const [name, setname] = useState('')
+  const [image, setimage] = useState('')
+  const [price, setprice] = useState('')
 
-The base URL for your backend is: `http://localhost:6001`
+  const handleSubmit = (e) => {
 
-## Core Deliverables
+    e.preventDefault()
 
-As a user:
+    const newPlant = {
+      name: name,
+      image: image,
+      price: price,
+    }
 
-1. When the app starts, I can see all plants.
-2. I can add a new plant to the page by submitting the form.
-3. I can mark a plant as "sold out".
-4. I can search for plants by their name and see a filtered list of plants.
+    
+      fetch('http://localhost:6001/plants',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newPlant)
+  
+      })
+      .then(res => res.json())
+      .then(data => console.log(data))
+      .catch(error => console.error(error))
+  
+    
 
-### Endpoints for Core Deliverables
-
-#### GET /plants
-
-Example Response:
-
-```json
-[
-  {
-    "id": 1,
-    "name": "Aloe",
-    "image": "./images/aloe.jpg",
-    "price": 15.99
-  },
-  {
-    "id": 2,
-    "name": "ZZ Plant",
-    "image": "./images/zz-plant.jpg",
-    "price": 25.98
+    setname('')
+    setimage('')
+    setprice('')
   }
-]
+
+  
+  
+
+  const handleName = (e) => {
+    setname(e.target.value)
+  }
+  const handleImage = (e) => {
+    setimage(e.target.value)
+  }
+  const handlePrice = (e) => {
+    setprice(e.target.value)
+  }
+  return (
+    <div className="new-plant-form">
+      <h2>New Plant</h2>
+      <form onSubmit={handleSubmit}>
+        <input type="text" name="name" placeholder="Plant name" value={name} onChange={handleName}/>
+        <input type="text" name="image" placeholder="Image URL" value={image} onChange={handleImage}/>
+        <input type="number" name="price" step="0.01" placeholder="Price" value={price} onChange={handlePrice}/>
+        <button type="submit">Add Plant</button>
+      </form>
+    </div>
+  );
+}
+
+export default NewPlantForm;
+
 ```
+---
 
-#### POST `/plants`
+### **PlantCard.js**
 
-Required Headers:
+This part is where each individual plant is given place in the list.This is the place where the `edit` functionallity is housed and also the `delete` functionality.
 
 ```js
-{
-  "Content-Type": "application/json"
+import React,{useState,useEffect} from "react";
+
+function PlantCard() {
+  const [plantInfo, setplantInfo] = useState([])
+  useEffect(() => {
+    fetch('http://localhost:6001/plants')
+    .then(res => res.json())
+    .then(data => setplantInfo(data))
+    .catch(error => console.error(error))
+  }, [])
+
+  const handleDelete = (id) => {
+    fetch(`http://localhost:6001/plants/${id}`,{
+      method: "DELETE",
+    })
+    .then(res => res.json())
+    .then(data => console.LOG(data))
+    .catch(error => console.error(error))
+
+  }
+  const handleEdit = (id) => {
+    const currentPlant = plantInfo.find(plant => plant.id === id);
+    const newPrice = window.prompt("Edit plant Price:", currentPlant.price);
+
+    if (newPrice && newPrice !== currentPlant.price) {
+      const updatedPlant = plantInfo.map(plant =>
+        plant.id === id ? { ...plant, price: newPrice} : plant
+      );
+      setplantInfo(updatedPlant);
+
+      fetch(`http://localhost:6001/plants/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+          name: currentPlant.name,
+          image: currentPlant.image,
+          price: newPrice,
+        }),
+      })
+        .then(res => res.json())
+        .then(data => console.log("Updated:", data))
+        .catch(err => console.error("Update failed:", err));
+    }
+  };
+  
+  return (
+    <ul>
+    {plantInfo.map((plant) => (
+      <li className="card" data-testid="plant-item" key={plant.id}>
+      <img src={plant.image || "https://via.placeholder.com/400"} alt={plant.name} />
+      <h4>{plant.name}</h4>
+      <p>Price: {plant.price}</p>
+      <button className="deletebtn" onClick={() => handleDelete(plant.id)}>Delete</button>
+      <button className="editbtn" onClick={() => handleEdit(plant.id)}>Edit</button>
+      {true ? (
+        <button className="primary">In Stock</button>
+      ) : (
+        <button>Out of Stock</button>
+      )}
+    </li>
+
+    ))}
+    </ul>
+    
+  );
 }
+
+export default PlantCard;
+
 ```
+---
+## **Features overview**
 
-Request Object:
+- Adding plant
+- Editing plant price (using window prompt)
+- Deleting plant
 
-```json
-{
-  "name": "string",
-  "image": "string",
-  "price": number
-}
-```
+## **Future Improvements**
 
-Example Response:
+- Preventing empty spaces from being added
+- Enchance the UI/UX for a mordern look.
+- Automatic update without need for page refresh.
 
-```json
-{
-  "id": 1,
-  "name": "Aloe",
-  "image": "./images/aloe.jpg",
-  "price": 15.99
-}
-```
+## **Authors**
+- Richard Wasonga - [GitHub Profile](https://github.com/Richard3wasonga)
 
-## Advanced Deliverables
+## **Contributors**
+- Bob Oyier - [GitHub Profile](https://github.com/oyieroyier)
 
-These deliverables are not required to pass the code challenge, but if you have
-the extra time, or even after the code challenge, they are a great way to
-stretch your skills.
+---
 
-You'll have to add additional elements for these features. Feel free to style
-them however you see fit!
+## **License**
 
-> Note: If you are going to attempt these advanced deliverables, please be sure
-> to have a working commit with all the Core Deliverables first!
-
-As a user:
-
-1. I can update the price of a plant and still see the updated price after
-   refreshing the page.
-2. I can delete a plant and it is still gone when I refresh the page.
-
-### Endpoints for Advanced Deliverables
-
-#### PATCH /plants/:id
-
-Required Headers:
-
-```js
-{
-  "Content-Type": "application/json"
-}
-```
-
-Request Object:
-
-```json
-{
-  "price": number
-}
-```
-
-Example Response:
-
-```json
-{
-  "id": 1,
-  "name": "Aloe",
-  "image": "./images/aloe.jpg",
-  "price": 16.99
-}
-```
-
-#### DELETE /plants/:id
-
-Example Response:
-
-```json
-{}
-```
+This project is open-source and available under the MIT License.
