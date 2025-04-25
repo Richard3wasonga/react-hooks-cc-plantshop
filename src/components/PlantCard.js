@@ -1,6 +1,6 @@
 import React from "react";
 
-function PlantCard({plantInfo,handleEdit,handleDelete}) {
+function PlantCard({plantInfo,handleEdit,handleDelete, handleToggleStock}) {
   
   
   return (
@@ -12,11 +12,9 @@ function PlantCard({plantInfo,handleEdit,handleDelete}) {
       <p>Price: {plant.price}</p>
       <button className="deletebtn" onClick={() => handleDelete(plant.id)}>Delete</button>
       <button className="editbtn" onClick={() => handleEdit(plant.id)}>Edit</button>
-      {true ? (
-        <button className="primary">In Stock</button>
-      ) : (
-        <button>Out of Stock</button>
-      )}
+      <button className="primary" onClick={() => handleToggleStock(plant.id)}>
+            {plant.inStock ? "In Stock" : "Out of Stock"}
+          </button>
     </li>
 
     ))}

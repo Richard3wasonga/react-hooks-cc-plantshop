@@ -7,10 +7,14 @@ function App() {
   const [searchTerm, setsearchTerm] = useState('')
   useEffect(() => {
     fetch('http://localhost:6001/plants')
-    .then(res => res.json())
-    .then(data => setplantInfo(data))
-    .catch(error => console.error(error))
-  }, [])
+      .then(res => res.json())
+      .then(data => {
+        const updatedData = data.map(plant => ({ ...plant, inStock: true }));
+        setplantInfo(updatedData);
+      })
+      .catch(error => console.error(error));
+  }, []);
+  
 
   const handleDelete = (id) => {
     fetch(`http://localhost:6001/plants/${id}`,{
@@ -66,11 +70,30 @@ function App() {
     setsearchTerm(value);
   };
   const filteredserarch = plantInfo.filter((plant) => plant.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  
+  const handleToggleStock = (id) => {
+    const updatedPlants = plantInfo.map((plant) =>
+      plant.id === id ? { ...plant, inStock: !plant.inStock } : plant
+    );
+    setplantInfo(updatedPlants);
+  
+    const updatedPlant = updatedPlants.find((plant) => plant.id === id);
+  
+    fetch(`http://localhost:6001/plants/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedPlant),
+    })
+      .then(res => res.json())
+      .then(data => console.log("Stock status updated:", data))
+      .catch(err => console.error("Toggle stock error:", err));
+  };
+  
 
   return (
     <div className="app">
       <Header />
-      <PlantPage plantInfo={filteredserarch} setplantInfo={setplantInfo} handleDelete={handleDelete} handleEdit={handleEdit} handleAddPlant={handleAddPlant} handleSearch={handleSearch}/>
+      <PlantPage plantInfo={filteredserarch} setplantInfo={setplantInfo} handleDelete={handleDelete} handleEdit={handleEdit} handleAddPlant={handleAddPlant} handleSearch={handleSearch} handleToggleStock={handleToggleStock}/>
     </div>
   );
 }
