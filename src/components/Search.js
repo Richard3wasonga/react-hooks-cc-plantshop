@@ -8,7 +8,7 @@ function Search({handleSearch}) {
         type="text"
         id="search"
         placeholder="Type a name to search..."
-        onChange={(e) => console.log("Searching...")}
+        onChange={(e) => handleSearch(e.target.value)}
       />
     </div>
   );

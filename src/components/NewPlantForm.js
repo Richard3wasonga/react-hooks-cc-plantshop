@@ -1,6 +1,6 @@
 import React,{useState} from "react";
 
-function NewPlantForm() {
+function NewPlantForm({handleAddPlant}) {
   const [name, setname] = useState('')
   const [image, setimage] = useState('')
   const [price, setprice] = useState('')
@@ -15,20 +15,7 @@ function NewPlantForm() {
       price: price,
     }
 
-    
-      fetch('http://localhost:6001/plants',{
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newPlant)
-  
-      })
-      .then(res => res.json())
-      .then(data => console.log(data))
-      .catch(error => console.error(error))
-  
-    
+    handleAddPlant(newPlant)
 
     setname('')
     setimage('')

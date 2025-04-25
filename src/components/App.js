@@ -4,6 +4,7 @@ import PlantPage from "./PlantPage";
 
 function App() {
   const [plantInfo, setplantInfo] = useState([])
+  const [searchTerm, setsearchTerm] = useState('')
   useEffect(() => {
     fetch('http://localhost:6001/plants')
     .then(res => res.json())
@@ -47,10 +48,29 @@ function App() {
         .catch(err => console.error("Update failed:", err));
     }
   };
+
+  const handleAddPlant = (newPlant) => {
+    fetch("http://localhost:6001/plants", {
+      method: "POST",
+      headers: {
+        "Content-Type": "Application/JSON",
+      },
+      body: JSON.stringify(newPlant),
+    })
+      .then((res) => res.json())
+      .then((data) => setplantInfo((prevPlants) => [...prevPlants, data]))
+      .catch((err) => console.error("Error adding plant:", err));
+  };
+
+  const handleSearch = (value) => {
+    setsearchTerm(value);
+  };
+  const filteredserarch = plantInfo.filter((plant) => plant.name.toLowerCase().includes(searchTerm.toLowerCase()))
+
   return (
     <div className="app">
       <Header />
-      <PlantPage plantInfo={plantInfo} handleDelete={handleDelete} handleEdit={handleEdit}/>
+      <PlantPage plantInfo={filteredserarch} setplantInfo={setplantInfo} handleDelete={handleDelete} handleEdit={handleEdit} handleAddPlant={handleAddPlant} handleSearch={handleSearch}/>
     </div>
   );
 }
